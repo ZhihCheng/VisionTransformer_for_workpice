@@ -10,6 +10,10 @@
 *.userosscache
 *.sln.docstates
 
+#fold
+laser_image
+output
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
