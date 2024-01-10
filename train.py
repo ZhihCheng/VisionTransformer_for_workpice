@@ -13,14 +13,8 @@ import torch.nn as nn
 from torch.optim import lr_scheduler
 import torchvision.transforms as trns
 import tqdm
-import wandb
-
 from vit_pytorch import ViT
-from vit_pytorch.mobile_vit import MobileViT
-
-
-
-
+from ResNetModified import ResNetModified
 from torch import optim
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
@@ -29,7 +23,7 @@ from torchvision import models
 from transformers import optimization
 from val_test import validate
 
-from data_load.magnet_dataset import magnet_Dataset
+# from data_load.magnet_dataset import magnet_Dataset
 from data_load.new_magnet_dataset import magnet_Dataset
 logging.basicConfig(level=logging.DEBUG)
 
@@ -128,16 +122,24 @@ def main():
             start = time.time()
         for images, targets,factor,_ in tqdm_loader:
             
-            target=[]
             current_step += 1
             images = images.cuda()
-
+            # targets = targets.cuda()
+            
+            target=[]
             for i in range(len(targets)):
                 target.append([targets[i]])
             
-
+            del targets
+            
             target = torch.FloatTensor(target).cuda()
             with autocast():
+                # x1,x2,x3,x4 = model(images)
+                # logging.info(x1.size())
+                # logging.info(x2.size())
+                # logging.info(x3.size())
+                # logging.info(x4.size())
+                
                 out_cls = model(images)
                 losses = criterion(out_cls,target)
                 
@@ -181,27 +183,33 @@ if __name__ == '__main__':
     torch.cuda.set_device(device_ids[0])
     torch.backends.cudnn.benchmark = True
 
-    #=====================================Vit===================================================
-    model =  MobileViT(
-        image_size = (256, 256),
-        dims = [96, 120, 144],
-        channels = [16, 32, 48, 48, 64, 64, 80, 80, 96, 96, 384],
-        num_classes = 1,
-    )
-    
-    data_num = 0
-    frequency = 200
-    ####################################
+   
     
     epoch_cycle = [8, 24, 56, 120, 240, 500, 1000, 2000,4000,4088]
     lr_end = 1e-10
     lr = 0.001
     TOTAL_EPOCHS = 4089
-    batch_size = 64
+    batch_size = 32
     image_size = 256
     save_interval = 500
     L2_Regularization = 0.2
-    
+    CNN_feature = models.resnext50_32x4d(weights=models.ResNeXt50_32X4D_Weights.IMAGENET1K_V2)
+    VIT_feature = model = ViT(
+        image_size = 64,
+        patch_size = 16,
+        channels=512,
+        num_classes = 1,
+        dim = 1024,
+        depth = 6,
+        heads = 16,
+        mlp_dim = 2048,
+        dropout = 0.1,
+        emb_dropout = 0.1
+    )
+    model = ResNetModified(CNN_feature,VIT_feature)
+    data_num = 0
+    frequency = 200
+    ####################################
     criterion = nn.MSELoss()
     tips = (f"mobile Vit 優化器Rmsprop,",
             f"image_size=256",
@@ -210,9 +218,10 @@ if __name__ == '__main__':
             f"使用MSE，修該laynormal改為batchnormal",
         )
     
-    data_std = True
+    
+    data_std = False
     ####################################
-    dir_dataset = 'C:\change_rotaion_code/laser_image/crop_image/ring/'
-    dir_save_path = 'C:\VisionTransformer\output/ring/version12/version0_'
+    dir_dataset = r'laser_image/crop_image/ring/'
+    dir_save_path = r'output/ring/version12/version0_'
     dir_save = os.path.join(dir_save_path+str(frequency)+"hz",'0'+str(data_num+1))
     main()

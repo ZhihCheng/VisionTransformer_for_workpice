@@ -21,10 +21,10 @@ class magnet_Dataset(Dataset):
         self.out_side = []
         self.imgs ,self.lbls ,self.factor ,self.work_pice_name, self.out_side = Reader_Data.get_total_data(root, self.data_num, self.frequency, self.model_type, self.set_num)
 
-        print(f'imags len = {len(self.imgs)}')
-        print(f'traget len = {len(self.lbls)}')
-        print(f'factor len = {len(self.factor)}')
-        print(f'work_pice_name len = {len(self.work_pice_name)}')
+        # print(f'imags len = {len(self.imgs)}')
+        # print(f'traget len = {len(self.lbls)}')
+        # print(f'factor len = {len(self.factor)}')
+        # print(f'work_pice_name len = {len(self.work_pice_name)}')
         print(f'outlier data= {self.out_side}')
         self.avglbl = np.mean(self.lbls)
         if data_std == True:

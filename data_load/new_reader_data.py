@@ -20,7 +20,6 @@ class Reader_Data:
         out_name = []
         for i in range(1,4):
             excel_file_name = os.path.join(path,'batch'+str(i)+'_ring_data.xlsx')
-            print(excel_file_name)
             sheet_name = 'factor'
             factor_matrix = pd.read_excel(excel_file_name, sheet_name=sheet_name,header=None)
             sheet_name = str(frequency) + 'hz_' + ('pmb' if data_num ==0 else 'iron')
